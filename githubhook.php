@@ -89,7 +89,7 @@ CREATE TABLE commits (
 			$sql = 'INSERT INTO
 				commits(name, mail, message, url, repo)
 			VALUES
-				"'.$name.'",
+				("'.$name.'",
 				"'.$from.'",
 				"'.$msg.'",
 				"'.$url.'",
