@@ -41,11 +41,13 @@ CREATE TABLE commits (
 	if (!array_key_exists('payload', $_POST)) {
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
 			$sql = 'SELECT *
-				FROM commits';
+				FROM commits
+				ORDER BY id DESC';
 			$result = mysql_query($sql);
 			if ($result) {
-				echo "<h1>Commits</h1>";
+				echo "<h1>Commits</h1><hr>";
 				while ($row = mysql_fetch_array($result)) {
+					echo "<h2>".$row['repo']."</h2>";
 					echo "<p>From: ".$row['name']." (".$row['mail'].")</p>";
 					echo "<p>".$row['message']."</p>";
 					echo "<p><a href=\"".$row['url']."\">Go to commit in ".$row['repo']."</a></p>";
