@@ -6,7 +6,8 @@
 	 *
 	 * Just enter some addresses after this comment.
 	 * They'll get a mail for every commit!
-	 * Also shows all commits if you enter your mysql credentials
+	 * Also shows all commits if you enter your mysql credentials.
+	 * Delete vars if you don't want this!
 	 */
 	/*
 	 * SQL to create table
@@ -18,28 +19,42 @@ CREATE TABLE commits (
 	url TEXT NOT NULL,
 	repo TEXT NOT NULL )
 	 */
-	$server = "mysql5.service";
-	$user = "HTO01FLBDAFU_app";
-	$pass = "PASSWORD GOES HERE";
-	$database = "HTO01FLBDAFU_app";
+	$server = "HOSTNAME";
+	$user = "USERNAME";
+	$pass = "PASSWORD";
+	$database = "DATABASE";
 
-	$to = "xythobuz@me.com, hutattedonmyarm@me.com, baeder.felix@gmail.com";
+	$to = "test@test.com, test@example.org";
+
+	if (isset($server) && isset($user) && isset($pass) && isset($database)) {
+		$db = mysql_connect($server, $user, $pass);
+		mysql_select_db($database);
+		if (mysql_errno()) {
+			echo ('Database error!');
+			unset($server);
+			unset($user);
+			unset($pass);
+			unset($database);
+		}
+	}
 
 	if (!array_key_exists('payload', $_POST)) {
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
-			$sql = 'SELECT * FROM commits';
+			$sql = 'SELECT *
+				FROM commits';
 			$result = mysql_query($sql);
 			if ($result) {
 				echo "<h1>Commits</h1>";
 				while ($row = mysql_fetch_array($result)) {
 					echo "<p>From: ".$row['name']." (".$row['mail'].")</p>";
 					echo "<p>".$row['message']."</p>";
-					echo "<p><a href=\"".$row['mail']."\">Go to commit in ".$row['repo']."</a></p>";
+					echo "<p><a href=\"".$row['url']."\">Go to commit in ".$row['repo']."</a></p>";
 					echo "<hr>";
 				}
 				echo "</body></html>";
+				exit;
 			} else {
-				echo "<p>Database error...</p></body></html>";
+				echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
 				exit;
 			}
 		} else {
@@ -71,12 +86,13 @@ CREATE TABLE commits (
 		$name = $commit['author']['name'];
 		$url = $commit['url'];
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
-			$sql = 'INSERT INTO commits
-				name = "'.$name.'",
-				mail = "'.$from.'",
-				message = "'.$msg.'",
-				url = "'.$url.'",
-				repo = "'.$repo.'"';
+			$sql = 'INSERT INTO commits (name, mail, message, url, repo)
+			VALUES
+				"'.$name.'",
+				"'.$from.'",
+				"'.$msg.'",
+				"'.$url.'",
+				"'.$repo.'"';
 			$result = mysql_query($sql);
 		}
 		sendEmail($to, $from, $msg, $name, $url, $repo);
