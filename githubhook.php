@@ -86,13 +86,14 @@ CREATE TABLE commits (
 		$name = $commit['author']['name'];
 		$url = $commit['url'];
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
-			$sql = 'INSERT INTO commits (name, mail, message, url, repo)
+			$sql = 'INSERT INTO
+				commits(name, mail, message, url, repo)
 			VALUES
 				"'.$name.'",
 				"'.$from.'",
 				"'.$msg.'",
 				"'.$url.'",
-				"'.$repo.'"';
+				"'.$repo.'")';
 			$result = mysql_query($sql);
 		}
 		sendEmail($to, $from, $msg, $name, $url, $repo);
