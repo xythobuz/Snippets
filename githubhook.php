@@ -40,24 +40,59 @@ CREATE TABLE commits (
 
 	if (!array_key_exists('payload', $_POST)) {
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
-			$sql = 'SELECT *
-				FROM commits
-				ORDER BY id DESC';
-			$result = mysql_query($sql);
-			if ($result) {
-				echo "<h1>Commits</h1><hr>";
-				while ($row = mysql_fetch_array($result)) {
-					echo "<h2>".$row['repo']."</h2>";
-					echo "<p>From: ".$row['name']." (".$row['mail'].")</p>";
-					echo "<p>".$row['message']."</p>";
-					echo "<p><a href=\"".$row['url']."\">Go to commit in ".$row['repo']."</a></p>";
-					echo "<hr>";
+			if (!isset($_GET['r'])) {
+				?><form method="get"><select name="r"><?
+				$sql = 'SELECT repo FROM commits GROUP BY repo';
+				$result = mysql_query($sql);
+				if (!$result) {
+					echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
+					exit;
 				}
-				echo "</body></html>";
-				exit;
+				while ($row = mysql_fetch_array($result)) {
+					?><option value="<? echo $row['repo']; ?>"><? echo $row['repo']; ?></option><?
+				}
+				?></select></form><?
+				
+				$sql = 'SELECT *
+					FROM commits
+					ORDER BY id DESC';
+				$result = mysql_query($sql);
+				if ($result) {
+					echo "<h1>Commits</h1><hr>";
+					while ($row = mysql_fetch_array($result)) {
+						echo "<h2>".$row['repo']."</h2>";
+						echo "<p>From: ".$row['name']." (".$row['mail'].")</p>";
+						echo "<p>".$row['message']."</p>";
+						echo "<p><a href=\"".$row['url']."\">Go to commit in ".$row['repo']."</a></p>";
+						echo "<hr>";
+					}
+					echo "</body></html>";
+					exit;
+				} else {
+					echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
+					exit;
+				}
 			} else {
-				echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
-				exit;
+				$sql = 'SELECT *
+					FROM commits
+					WHERE repo = "'.mysql_real_escape_string($_GET['r']).'"
+					ORDER BY id DESC';
+				$result = mysql_query($sql);
+				if ($result) {
+					echo "<h1>Commits</h1><hr>";
+					while ($row = mysql_fetch_array($result)) {
+						echo "<h2>".$row['repo']."</h2>";
+						echo "<p>From: ".$row['name']." (".$row['mail'].")</p>";
+						echo "<p>".$row['message']."</p>";
+						echo "<p><a href=\"".$row['url']."\">Go to commit in ".$row['repo']."</a></p>";
+						echo "<hr>";
+					}
+					echo "</body></html>";
+					exit;
+				} else {
+					echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
+					exit;
+				}
 			}
 		} else {
 			echo "<p>No payload!</p></body></html>";
