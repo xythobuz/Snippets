@@ -41,7 +41,7 @@ CREATE TABLE commits (
 	if (!array_key_exists('payload', $_POST)) {
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
 			if (!isset($_GET['r'])) {
-				?><form method="get"><select name="r"><?
+				?><p>Repository: <form method="get"><select name="r"><?
 				$sql = 'SELECT repo FROM commits GROUP BY repo';
 				$result = mysql_query($sql);
 				if (!$result) {
@@ -51,7 +51,7 @@ CREATE TABLE commits (
 				while ($row = mysql_fetch_array($result)) {
 					?><option value="<? echo $row['repo']; ?>"><? echo $row['repo']; ?></option><?
 				}
-				?></select></form><?
+				?></select></form></p><?
 				
 				$sql = 'SELECT *
 					FROM commits
