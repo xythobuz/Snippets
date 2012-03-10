@@ -8,7 +8,7 @@
 // Use POSIX Baud constants (B2400, B9600...)
 #define BAUD B19200
 // Searchterm for ports in unix
-#define SEARCH tty
+#define SEARCH "tty"
 
 // Open the serial port. Return 0 on success, -1 on error
 int serialOpen(char *port);

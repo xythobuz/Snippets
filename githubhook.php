@@ -41,7 +41,7 @@ CREATE TABLE commits (
 	if (!array_key_exists('payload', $_POST)) {
 		if (isset($server) && isset($user) && isset($pass) && isset($database)) {
 			if (!isset($_GET['r'])) {
-				?><p>Repository: <form method="get"><select name="r"><?
+				?><fieldset><label>Repository: <form method="get"><select name="r"><option value="">All Repos</option><?
 				$sql = 'SELECT repo FROM commits GROUP BY repo';
 				$result = mysql_query($sql);
 				if (!$result) {
@@ -51,7 +51,7 @@ CREATE TABLE commits (
 				while ($row = mysql_fetch_array($result)) {
 					?><option value="<? echo $row['repo']; ?>"><? echo $row['repo']; ?></option><?
 				}
-				?></select></form></p><?
+				?></select><input type="submit" value="Show commits" /></label></form></fieldset><?
 				
 				$sql = 'SELECT *
 					FROM commits
@@ -73,10 +73,28 @@ CREATE TABLE commits (
 					exit;
 				}
 			} else {
-				$sql = 'SELECT *
+				?><fieldset><label>Repository: <form method="get"><select name="r"><option value="">All Repos</option><?
+				$sql = 'SELECT repo FROM commits GROUP BY repo';
+				$result = mysql_query($sql);
+				if (!$result) {
+					echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
+					exit;
+				}
+				while ($row = mysql_fetch_array($result)) {
+					?><option value="<? echo $row['repo']; ?>"><? echo $row['repo']; ?></option><?
+				}
+				?></select><input type="submit" value="Show commits" /></label></form></fieldset><?
+
+				if ($_GET['r'] == "") {
+					$sql = 'SELECT *
+					FROM commits
+					ORDER BY id DESC';
+				} else {
+					$sql = 'SELECT *
 					FROM commits
 					WHERE repo = "'.mysql_real_escape_string($_GET['r']).'"
 					ORDER BY id DESC';
+				}
 				$result = mysql_query($sql);
 				if ($result) {
 					echo "<h1>Commits</h1><hr>";
