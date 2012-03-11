@@ -144,11 +144,11 @@ CREATE TABLE commits (
 			$sql = 'INSERT INTO
 				commits(name, mail, message, url, repo)
 			VALUES
-				("'.$name.'",
-				"'.$from.'",
-				"'.$msg.'",
-				"'.$url.'",
-				"'.$repo.'")';
+				("'.mysql_real_escape_string($name).'",
+				"'.mysql_real_escape_string($from).'",
+				"'.mysql_real_escape_string($msg).'",
+				"'.mysql_real_escape_string($url).'",
+				"'.mysql_real_escape_string($repo).'")';
 			$result = mysql_query($sql);
 		}
 		sendEmail($to, $from, $msg, $name, $url, $repo);
