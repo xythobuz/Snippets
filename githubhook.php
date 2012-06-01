@@ -28,6 +28,7 @@ CREATE TABLE mail (
 	repo TEXT NOT NULL )
 
 	 */
+
 	$server = "SERVERNAME";
 	$user = "USERNAME";
 	$pass = "PASSWORD";
@@ -42,7 +43,6 @@ CREATE TABLE mail (
 
 	if (!array_key_exists('payload', $_POST)) {
 		// Were not called as recieve hook --> Show stuff
-
 ?>
 <p><a href="http://www.xythobuz.org">GutHub Post Recieve Hook in PHP by xythobuz</a></p>
 <p>Repository:
@@ -141,7 +141,12 @@ CREATE TABLE mail (
 			exit;
 		}
 
-		$sql = 'SELECT mail, repo FROM mail WHERE repo = "'.mysql_real_escape_string($repo).'"';
+		$sql = 'SELECT * FROM mail WHERE repo = "'.mysql_real_escape_string($repo).'"';
+		$result = mysql_query($sql);
+		if (!$result) {
+			echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
+			exit;
+		}
 		$to = "";
 		$i = 0;
 		while ($row = mysql_fetch_array($result)) {
@@ -150,7 +155,6 @@ CREATE TABLE mail (
 			}
 			$to .= stripslashes($row['mail']);
 		}
-
 		if ($to != "") {
 			sendEmail($to, $from, $msg, $name, $url, $repo);
 		}
