@@ -143,7 +143,11 @@ CREATE TABLE mail (
 
 		$sql = 'SELECT mail, repo FROM mail WHERE repo = "'.mysql_real_escape_string($repo).'"';
 		$to = "";
+		$i = 0;
 		while ($row = mysql_fetch_array($result)) {
+			if ($i++ != 0) {
+				$to .= ", ";
+			}
 			$to .= stripslashes($row['mail']);
 		}
 
