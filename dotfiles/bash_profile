@@ -1,0 +1,31 @@
+PATH=~/bin:$PATH:.
+
+# Prompt Foo
+GREEN='\[\e[0;32m\]'
+BGREEN='\[\e[1;32m\]'
+BLUE='\[\e[1;34m\]'
+WHITE='\[\e[1;37m\]'
+RED='\[\e[0;31m\]'
+if [ "$TERM" = "linux" ]; then
+	RET_SUCC="\[\033[32;1m\]v";
+	RET_FAIL="\[\033[31;1m\]x";
+else
+	RET_SUCC="$GREEN\342\234\223";
+	RET_FAIL="$RED\342\234\227";
+fi
+PROMPT_COMMAND='RET=$?; if [[ $RET -eq 0 ]]; then export PS1="${RET_SUCC} ${_PS1}"; else export PS1="${RET_FAIL} ${_PS1}"; fi'
+#_PS1="(\$?) $GREEN\u@\h $BLUE\w $BGREEN\$$WHITE "
+_PS1="\u $BLUE\w $BGREEN\$ $WHITE"
+#_PS1="$BLUE\w $BGREEN\$ $WHITE"
+
+# Colorful ls
+alias ls='ls -FG'
+export LSCOLORS="eafxcxdxbxegedabagacad"
+
+export EDITOR='vim'
+alias edit='$EDITOR'
+
+# For gnuradio
+export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
+export DYLD_FRAMEWORK_PATH=/usr/local/lib:$DYLD_FRAMEWORK_PATH
+alias grc='gnuradio-companion'
