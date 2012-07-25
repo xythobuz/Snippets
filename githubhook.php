@@ -1,4 +1,3 @@
-<html><head><title>GitHub Post Recieve Hook</title></head><body>
 <?php
 	/*
 	 * GitHub Post Recieve Hook in PHP
@@ -28,11 +27,14 @@ CREATE TABLE mail (
 	repo TEXT NOT NULL )
 
 	 */
+	$server = "";
+	$user = "";
+	$pass = "";
+	$database = "";
 
-	$server = "SERVERNAME";
-	$user = "USERNAME";
-	$pass = "PASSWORD";
-	$database = "DATABASE";
+	if (!isset($_GET['bare'])) {
+		echo "<html><head><title>GitHub Post Recieve Hook</title></head><body>\n";
+	}
 
 	$db = mysql_connect($server, $user, $pass);
 	mysql_select_db($database);
@@ -43,6 +45,7 @@ CREATE TABLE mail (
 
 	if (!array_key_exists('payload', $_POST)) {
 		// Were not called as recieve hook --> Show stuff
+		if (!isset($_GET['bare'])) {
 ?>
 <p><a href="http://www.xythobuz.org">GutHub Post Recieve Hook in PHP by xythobuz</a></p>
 <p>Repository:
@@ -57,6 +60,8 @@ CREATE TABLE mail (
 <input type="submit" value="Subscribe Repo" name="subscribe">
 </form></p>
 <?
+		}
+
 		if (isset($_GET['subscribe'])) {
 			// Subscripe person
 			if (($_GET['mail'] != "") && ($_GET['r'] != "")) {
@@ -88,15 +93,21 @@ CREATE TABLE mail (
 			}
 			$result = mysql_query($sql);
 			if ($result) {
-				echo "<h1>Commits</h1><hr>";
-				while ($row = mysql_fetch_array($result)) {
-					echo "<h2>".stripslashes($row['repo'])."</h2>";
-					echo "<p>From: ".stripslashes($row['name'])." (".stripslashes($row['mail']).")</p>";
-					echo "<p>".stripslashes($row['message'])."</p>";
-					echo "<p><a href=\"".stripslashes($row['url'])."\">Go to commit in ".stripslashes($row['repo'])."</a></p>";
-					echo "<hr>";
+				if (!isset($_GET['bare'])) {
+					echo "<h1>Commits</h1><hr>";
+					while ($row = mysql_fetch_array($result)) {
+						echo "<h2>".stripslashes($row['repo'])."</h2>";
+						echo "<p>From: ".stripslashes($row['name'])." (".stripslashes($row['mail']).")</p>";
+						echo "<p>".stripslashes($row['message'])."</p>";
+						echo "<p><a href=\"".stripslashes($row['url'])."\">Go to commit in ".stripslashes($row['repo'])."</a></p>";
+						echo "<hr>";
+					}
+					echo "</body></html>";
+				} else {
+					while ($row = mysql_fetch_array($result)) {
+						echo "<p>".stripslashes($row['message']),"</p>\n";
+					}
 				}
-				echo "</body></html>";
 				exit;
 			} else {
 				echo "<p>Database error!</p><p>".mysql_error()."</p></body></html>";
@@ -192,10 +203,12 @@ CREATE TABLE mail (
 			exit;
 		}
 		while ($row = mysql_fetch_array($result)) {
-?><option value="<? echo stripslashes($row['repo']); ?>"<? if ($row['repo'] == $_GET['r']) { echo " selected"; } ?>><? echo stripslashes($row['repo']); ?></option><?
+?><option value="<? echo stripslashes($row['repo']); ?>"<? if ((isset($_GET['r'])) && ($row['repo'] == $_GET['r'])) { echo " selected"; } ?>><? echo stripslashes($row['repo']); ?></option><?
 		}
 ?></select>
 <?
 	}
 ?>
 </body></html>
+
+
