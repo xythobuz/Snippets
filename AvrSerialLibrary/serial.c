@@ -22,7 +22,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdint.h>
-#include "serial.h"
+
+#include "../include/serial.h"
 
 #if  defined(__AVR_ATmega8__) || defined(__AVR_ATmega16__) || defined(__AVR_ATmega32__) \
   || defined(__AVR_ATmega8515__) || defined(__AVR_ATmega8535__) \
@@ -50,9 +51,29 @@
  #define SERIALUBRRL UBRRL
 #elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega1280__) \
    || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega640__)
-   // These definitions reflect the registers for the first UART. Change the 0s to 1s and you will use the second one.
+   // These definitions reflect the registers for the first UART. Change the 0s to 1s and you will use the second one.serial.c
  #define SERIALRECIEVEINTERRUPT USART0_RXC_vect
  #define SERIALTRANSMITINTERRUPT USART0_UDRE_vect
+ #define SERIALDATA UDR0
+ #define SERIALB UCSR0B
+ #define SERIALIE UDRIE0
+ #define SERIALC UCSR0C
+ #define SERIALUPM1 UPM01
+ #define SERIALUPM0 UPM00
+ #define SERIALUSBS USBS0
+ #define SERIALUCSZ0 UCSZ00
+ #define SERIALUCSZ1 UCSZ01
+ #define SERIALUCSZ2 UCSZ02
+ #define SERIALRXCIE RXCIE0
+ #define SERIALRXEN RXEN0
+ #define SERIALTXEN TXEN0
+ #define SERIALA UCSR0A
+ #define SERIALUDRIE UDRIE0
+ #define SERIALUDRE UDRE0
+ #define SERIALUBRR UBRR0
+#elif defined(__AVR_ATmega168__)
+ #define SERIALRECIEVEINTERRUPT USART_RX_vect
+ #define SERIALTRANSMITINTERRUPT USART_UDRE_vect
  #define SERIALDATA UDR0
  #define SERIALB UCSR0B
  #define SERIALIE UDRIE0
@@ -100,7 +121,7 @@ ISR(SERIALTRANSMITINTERRUPT) { // Data register empty
 		}
 	} else {
 		shouldStartTransmission = 1;
-		SERIALB &= ~(1 << SERIALDATAIE); // Disable Interrupt
+		SERIALB &= ~(1 << SERIALUDRIE); // Disable Interrupt
 	}
 }
 
@@ -174,6 +195,7 @@ uint8_t serialGet() {
 	} else {
 		rxRead = 0;
 	}
+	return c;
 #endif
 }
 
@@ -191,8 +213,8 @@ void serialWrite(uint8_t data) {
 	}
 	if (shouldStartTransmission == 1) {
 		shouldStartTransmission = 0;
-		SERIALB |= (1 << SERIALDATAIE); // Enable Interrupt
-		SERIALA |= (1 << SERIALDATAE); // Trigger Interrupt
+		SERIALB |= (1 << SERIALUDRIE); // Enable Interrupt
+		SERIALA |= (1 << SERIALUDRE); // Trigger Interrupt
 	}
 }
 
