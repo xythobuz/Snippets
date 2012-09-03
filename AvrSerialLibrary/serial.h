@@ -22,6 +22,11 @@
 #ifndef serial_h_
 #define serial_h_
 
+// If you don't define this, no buffers will be created and all
+// serial actions will wait until they are completed,
+// using no interrupts.
+#define SERIALNONBLOCK
+
 // RX & TX buffer size in bytes
 #define RX_BUFFER_SIZE 32
 #define TX_BUFFER_SIZE 32
