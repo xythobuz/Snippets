@@ -6,16 +6,16 @@
  * This file is part of AvrSerialLibrary.
  *
  * AvrSerialLibrary is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * AvrSerialLibrary is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with AvrSerialLibrary.  If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -96,6 +96,15 @@
 #endif
 
 #ifdef SERIALNONBLOCK
+
+#if (RX_BUFFER_SIZE < 2) || (TX_BUFFER_SIZE < 2)
+#error SERIAL BUFFER TOO SMALL!
+#endif
+
+#if (RX_BUFFER_SIZE + TX_BUFFER_SIZE) >= (RAMEND - 0x60)
+#error SERIAL BUFFER TOO LARGE!
+#endif
+
 uint8_t volatile rxBuffer[RX_BUFFER_SIZE];
 uint8_t volatile txBuffer[TX_BUFFER_SIZE];
 uint16_t volatile rxRead = 0;
@@ -126,7 +135,7 @@ ISR(SERIALTRANSMITINTERRUPT) { // Data register empty
 		SERIALB &= ~(1 << SERIALUDRIE); // Disable Interrupt
 	}
 }
-#endif
+#endif // SERIALNONBLOCK
 
 uint8_t serialInit(uint16_t baud, uint8_t databits, uint8_t parity, uint8_t stopbits) {
 	if (parity > ODD) {
@@ -177,14 +186,14 @@ uint8_t serialInit(uint16_t baud, uint8_t databits, uint8_t parity, uint8_t stop
 
 uint8_t serialHasChar() {
 #ifdef SERIALNONBLOCK
-	return (rxRead != rxWrite); // True if char available
+	if (rxRead != rxWrite) { // True if char available
 #else
 	if (SERIALA & RXC) {
+#endif
 		return 1;
 	} else {
 		return 0;
 	}
-#endif
 }
 
 uint8_t serialGet() {
@@ -236,10 +245,22 @@ void serialWrite(uint8_t data) {
 #endif
 }
 
-void serialWriteString(char *data) {
+void serialWriteString(const char *data) {
 	while (*data != '\0') {
 		serialWrite(*data++);
 	}
+}
+
+uint8_t transmitBufferEmpty(void) {
+#ifdef SERIALNONBLOCK
+	if (txRead != txWrite) {
+		return 1;
+	} else {
+		return 0;
+	}
+#else
+	return 1;
+#endif
 }
 
 void serialClose() {

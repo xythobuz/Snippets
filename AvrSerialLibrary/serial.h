@@ -1,34 +1,35 @@
 /*
  * serial.h
  *
- * Copyright 2011 Thomas Buck <xythobuz@me.com>
+ * Copyright 2012 Thomas Buck <xythobuz@me.com>
  *
  * This file is part of AvrSerialLibrary.
  *
  * AvrSerialLibrary is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * AvrSerialLibrary is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with AvrSerialLibrary.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef serial_h_
-#define serial_h_
+#ifndef _serial_h
+#define _serial_h
+
+#include <avr/io.h> // RAMEND definition
 
 // If you don't define this, no buffers will be created and all
-// serial actions will wait until they are completed,
-// using no interrupts.
+// serial actions will wait until they are completed...
 #define SERIALNONBLOCK
 
-// RX & TX buffer size in bytes
-#define RX_BUFFER_SIZE 32
+// RX & TX buffer size in bytes, power of 2
+#define RX_BUFFER_SIZE 16
 #define TX_BUFFER_SIZE 32
 
 // Select Baudrate with this macro
@@ -81,7 +82,7 @@ void serialWrite(uint8_t data);
  *
  * Blocks if the buffer is full!
  */
-void serialWriteString(char *data);
+void serialWriteString(const char *data);
 
 /* void serialClose(void)
  *
@@ -89,4 +90,6 @@ void serialWriteString(char *data);
  */
 void serialClose(void);
 
-#endif /* SERIAL_H_ */
+uint8_t transmitBufferEmpty(void);
+
+#endif // _serial_h
