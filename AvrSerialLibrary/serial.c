@@ -23,7 +23,7 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 
-#include <serial.h>
+#include "serial.h"
 
 #if  defined(__AVR_ATmega8__) || defined(__AVR_ATmega16__) || defined(__AVR_ATmega32__) \
   || defined(__AVR_ATmega8515__) || defined(__AVR_ATmega8535__) \
@@ -254,9 +254,9 @@ void serialWriteString(const char *data) {
 uint8_t transmitBufferEmpty(void) {
 #ifdef SERIALNONBLOCK
 	if (txRead != txWrite) {
-		return 1;
-	} else {
 		return 0;
+	} else {
+		return 1;
 	}
 #else
 	return 1;
@@ -264,6 +264,10 @@ uint8_t transmitBufferEmpty(void) {
 }
 
 void serialClose() {
+
+	while (!transmitBufferEmpty());
+	if (!serialHasChar())
+		while (!(SERIALA & (1 << UDRE))); // Wait for transmissions to complete
 	SERIALB = 0;
 	SERIALC = 0;
 #ifdef SERIALBAUD8
