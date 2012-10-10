@@ -264,10 +264,12 @@ uint8_t transmitBufferEmpty(void) {
 }
 
 void serialClose() {
-
+	serialWrite(' '); // Last char seems not to be transmitted...
 	while (!transmitBufferEmpty());
+#ifndef SERIALNONBLOCK
 	if (!serialHasChar())
-		while (!(SERIALA & (1 << UDRE))); // Wait for transmissions to complete
+#endif
+	while (!(SERIALA & (1 << UDRE))); // Wait for transmissions to complete
 	SERIALB = 0;
 	SERIALC = 0;
 #ifdef SERIALBAUD8
