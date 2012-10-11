@@ -1,5 +1,5 @@
 /*
- * By: Thomas Buck <taucher.bodensee@gmail.com>
+ * By: Thomas Buck <xythobuz@me.com>
  * Visit: www.xythobuz.org
  */
 import javax.swing.*;
