@@ -14,6 +14,10 @@ C Library to speak to serial ports, cross plattform for Windows and Unix (only t
 
 Very simple C Program that shows a X11 Window. Can be used as template for small X11 Projects.
 
+## OpenGLTest
+
+Simple OpenGL GLUT API template, ready to plug some logic in... :)
+
 ## githubhook.php
 
 PHP Script that can be used as github post receive hook. Needs a MySQL Database. Can show commits in different repositories. E-Mail subscriptions for every repository can be created. This was useful in a time before automatic github E-Mails.
