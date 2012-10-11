@@ -26,6 +26,10 @@ Little Java Utility that simulates Ant Behaviour. Essentially lights pixels with
 
 Improvement upon Ameise.java, this time implementing Conways Game of Life, visible in real-time.
 
+## ProjectEuler
+
+Solutions to some [Project Euler](http://projecteuler.net) Problems I did.
+
 ## dotfiles
 
 I'm backing up my dotfiles in here. Also includes the handful of vim plugins I use.
