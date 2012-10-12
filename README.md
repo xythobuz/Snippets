@@ -40,7 +40,7 @@ Solutions to some [Project Euler](http://projecteuler.net) Problems I did.
 
 ## dotfiles
 
-I'm backing up my dotfiles in here. Also includes the handful of vim plugins I use.
+I'm backing up my dotfiles in here.
 
 ## License
 
