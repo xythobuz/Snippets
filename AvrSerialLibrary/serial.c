@@ -226,6 +226,9 @@ uint8_t serialBufferSpaceRemaining() {
 }
 
 void serialWrite(uint8_t data) {
+    if (data == '\n') {
+        serialWrite('\r');
+    }
 #ifdef SERIALNONBLOCK
     while (!serialBufferSpaceRemaining()); // Buffer is full, wait!
     txBuffer[txWrite] = data;
@@ -265,14 +268,20 @@ uint8_t transmitBufferEmpty(void) {
 
 void serialClose() {
 #ifdef SERIALNONBLOCK
+    uint8_t sreg = SREG;
+    sei();
     while (SERIALB & (1 << SERIALUDRIE)); // Wait while interrupt is on
 #else
     if (!serialHasChar())
         while (!(SERIALA & (1 << UDRE))); // Wait for transmissions to complete
 #endif
 
-    SERIALB = 0;
-    SERIALC = 0;
+#ifdef SERIALNONBLOCK
+    cli();
+#endif
+
+    SERIALB = 0; // Disable USART
+    SERIALC = 0; // Reset config
 #ifdef SERIALBAUD8
     SERIALUBRRH = 0;
     SERIALUBRRL = 0;
@@ -284,5 +293,6 @@ void serialClose() {
     txRead = 0;
     rxWrite = 0;
     txWrite = 0;
+    SREG = sreg;
 #endif
 }
