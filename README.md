@@ -2,10 +2,6 @@
 
 These are small code snippets, little helper libraries and other stuff I've written, as long as it does not qualify for an extra project.
 
-## AvrSerialLibrary
-
-Simple AVR UART Library for many different AVR types. I am using it in all of my AVR Projects.
-
 ## WinUnixSerial
 
 C Library to speak to serial ports, cross plattform for Windows and Unix (only tested on Mac OS X). Can detect available ports. Used in the [LED-Cube](https://github.com/xythobuz/LED-Cube) PC Software [CubeControl](https://github.com/xythobuz/LED-Cube/tree/master/CubeControl)

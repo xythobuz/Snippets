@@ -1,14 +1,14 @@
 /*
  * POSIX compatible serial port library
  * Uses 8 databits, no parity, 1 stop bit, no handshaking
- * By: Thomas Buck <taucher.bodensee@gmail.com>
- * Visit: www.xythobuz.org
  */
 
 // Use POSIX Baud constants (B2400, B9600...)
-#define BAUD B19200
+#define BAUD B38400
 // Searchterm for ports in unix
 #define SEARCH "tty"
+
+#define XONXOFF
 
 // Open the serial port. Return 0 on success, -1 on error
 int serialOpen(char *port);
