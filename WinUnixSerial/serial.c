@@ -1,8 +1,23 @@
 /*
- * POSIX compatible serial port library
- * Uses 8 databits, no parity, 1 stop bit, no handshaking
+ * serial.c
+ *
+ * Copyright 2012 Thomas Buck <xythobuz@me.com>
+ *
+ * This file is part of YASAB.
+ *
+ * YASAB is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * YASAB is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with YASAB.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,65 +26,174 @@
 #include <termios.h>
 #include <dirent.h>
 #include <errno.h>
+#include <time.h>
+#include <poll.h>
 
 #include "serial.h"
 
-int fd = -1;
+#define XONXOFF
+#define SEARCH "tty"
+#define TIMEOUT 2 // in seconds
+#define XON 0x11
+#define XOFF 0x13
 
-// Open the serial port
-int serialOpen(char *port) {
+int serialOpen(char *port, int baud, int flowcontrol) {
+    int fd;
     struct termios options;
 
-    if (fd != -1) {
-        close(fd);
-    }
     fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1) {
         return -1;
     }
 
-    fcntl(fd, F_SETFL, FNDELAY); // read() isn't blocking'
     tcgetattr(fd, &options);
-    cfsetispeed(&options, BAUD); // Set speed
-    cfsetospeed(&options, BAUD);
-    options.c_cflag |= (CLOCAL | CREAD);
 
-    options.c_cflag &= ~PARENB; // 8N1
-    options.c_cflag &= ~CSTOPB;
-    options.c_cflag &= ~CSIZE;
-    options.c_cflag |= CS8;
+    options.c_lflag = 0;
+    options.c_oflag = 0;
+    options.c_iflag = 0;
 
-    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input
-    options.c_oflag &= ~OPOST; // Raw output
-    options.c_iflag &= ~(IXOFF | IXANY);
+    // Set Baudrate
+    switch (baud) {
+        case 9600:
+            cfsetispeed(&options, B9600);
+            cfsetospeed(&options, B9600);
+            break;
+        case 19200:
+            cfsetispeed(&options, B19200);
+            cfsetospeed(&options, B19200);
+            break;
+        case 38400:
+            cfsetispeed(&options, B38400);
+            cfsetospeed(&options, B38400);
+            break;
+        case 76800:
+            cfsetispeed(&options, B76800);
+            cfsetospeed(&options, B76800);
+            break;
+        case 115200:
+            cfsetispeed(&options, B115200);
+            cfsetospeed(&options, B115200);
+            break;
+        default:
+            fprintf(stderr, "Warning: Baudrate not supported!\n");
+            serialClose(fd);
+            return -1;
+    }
+
+    // Input Modes
+    options.c_iflag |= IGNCR; // Ignore CR
 #ifdef XONXOFF
-    options.c_iflag |=  IXON; // XON-XOFF Flow Control outgoing
-#else
-    options.c_iflag &= ~(IXON);
+    options.c_iflag |= IXON; // XON-XOFF Flow Control
 #endif
+
+    // Output Modes
+    options.c_oflag |= OPOST; // Post-process output
+
+    // Control Modes
+    options.c_cflag |= CS8; // 8 data bits
+    options.c_cflag |= CREAD; // Enable Receiver
+    options.c_cflag |= CLOCAL; // Ignore modem status lines
+
+    // Local Modes
+    options.c_lflag |= IEXTEN; // Extended input character processing
+
+    // Special characters
+    options.c_cc[VMIN] = 0; // Always return...
+    options.c_cc[VTIME] = 0; // ..immediately from read()
+    options.c_cc[VSTOP] = XOFF;
+    options.c_cc[VSTART] = XON;
 
     tcsetattr(fd, TCSANOW, &options);
 
-    return 0;
+    tcflush(fd, TCIOFLUSH);
+
+    return fd;
 }
 
-// Write to port. Returns number of characters sent, -1 on error
-ssize_t serialWrite(char *data, size_t length) {
-    return write(fd, data, length);
-}
-
-// Read from port. Return number of characters read, 0 if none available, -1 on error
-ssize_t serialRead(char *data, size_t length) {
-    ssize_t temp = read(fd, data, length);
-    if ((temp == -1) && (errno == EAGAIN)) {
-        return 0;
+int serialHasChar(int fd) {
+    struct pollfd fds;
+    fds.fd = fd;
+    fds.events = (POLLIN | POLLPRI); // Data may be read
+    if (poll(&fds, 1, 0) > 0) {
+        return 1;
     } else {
-        return temp;
+        return 0;
     }
 }
 
-// Close the serial Port
-void serialClose(void) {
+typedef ssize_t(*Func)(int, void *, size_t);
+
+int serialRaw(int fd, char *d, int len, Func f) {
+    int errors = 0;
+    const int maxError = 1;
+    int processed = 0;
+    time_t start = time(NULL), end;
+
+    while (processed < len) {
+        int t = f(fd, (d + processed), (len - processed));
+        if (t == -1) {
+            errors++;
+            if (errors >= maxError) {
+                fprintf(stderr, "Error while reading/writing: %s\n", strerror(errno));
+                return 0;
+            }
+        } else {
+            processed += t;
+        }
+
+        end = time(NULL);
+        if (difftime(end, start) > TIMEOUT) {
+            fprintf(stderr, "Timeout (%is) while reading/writing!\n", TIMEOUT);
+            return 0;
+        }
+    }
+    return len;
+}
+
+void serialWaitUntilSent(int fd) {
+    while (tcdrain(fd) == -1) {
+        fprintf(stderr, "Could not drain data: %s\n", strerror(errno));
+    }
+}
+
+int serialWriteRaw(int fd, char *d, int len) {
+    int i = serialRaw(fd, d, len, (Func)write);
+    serialWaitUntilSent(fd);
+    return i;
+}
+
+int serialReadRaw(int fd, char *d, int len) {
+    return serialRaw(fd, d, len, (Func)read);
+}
+
+void serialWriteChar(int fd, char c) {
+    while (serialWriteRaw(fd, &c, 1) != 1);
+}
+
+void serialReadChar(int fd, char *c) {
+    while (serialReadRaw(fd, c, 1) != 1);
+    if (*c == XON) {
+        if (tcflow(fd, TCOON) == -1) {
+            fprintf(stderr, "Could not restart flow: %s\n", strerror(errno));
+        }
+        serialReadChar(fd, c);
+    } else if (*c == XOFF) {
+        if (tcflow(fd, TCOOFF) == -1) {
+            fprintf(stderr, "Could not stop flow: %s\n", strerror(errno));
+        }
+        serialReadChar(fd, c);
+    }
+}
+
+void serialWriteString(int fd, char *s) {
+    int l = strlen(s);
+    for (int i = 0; i < l; i++) {
+        serialWriteChar(fd, s[i]);
+    }
+}
+
+void serialClose(int fd) {
+    tcflush(fd, TCIOFLUSH);
     close(fd);
 }
 
@@ -94,7 +218,7 @@ char** namesInDev(int *siz) {
     closedir(dir);
 
     char *tmp = NULL;
-    // Fix every string, addin /dev/ in front of it...
+    // Fix every string, add /dev/ in front of it...
     for (i = 0; i < (size - 1); i++) {
         tmp = (char *)malloc((strlen(files[i]) + 6) * sizeof(char));
         tmp[0] = '/';
@@ -109,13 +233,11 @@ char** namesInDev(int *siz) {
     return files;
 }
 
-char** getSerialPorts() {
+char** getSerialPorts(void) {
     int size;
     char** files = namesInDev(&size);
     char **fin = NULL, **finish = NULL;
     int i = 0, j = 0, f, g;
-
-    // printf("JNI: Got files in /dev (%d)\n", size);
 
     fin = (char **)malloc(size * sizeof(char *));
     // Has space for all files in dev!
@@ -123,32 +245,13 @@ char** getSerialPorts() {
     while (files[i] != NULL) {
         // Filter for SEARCH and if it is a serial port
         if (strstr(files[i], SEARCH) != NULL) {
-            // We have a match
-            // printf("JNI: %s matched %s", files[i], search);
-
-            // Don't actually check if it is a serial port
-            // It causes long delays while trying to connect
-            // to Bluetooth devices...
-
-            // f = serialOpen(files[i]);
-            // if (f != -1) {
-            // printf(" and is a serial port\n");
             fin[j++] = files[i];
-            // 	serialClose();
-            // } else {
-            // printf(" and is not a serial port\n");
-            // 	free(files[i]);
-            // }
-
-
         } else {
             free(files[i]);
         }
         i++;
     }
     free(files);
-
-    // printf("JNI: Found %d serial ports\n", j);
 
     // Copy in memory with matching size, NULL at end
     finish = (char **)malloc((j + 1) * sizeof(char *));
@@ -158,6 +261,5 @@ char** getSerialPorts() {
     }
 
     free(fin);
-
     return finish;
 }
