@@ -11,8 +11,10 @@ touch $ipfile
 lastip=`cat $ipfile`
 
 if [ "$ip" != "$lastip" ]; then
-    echo "New public IP. Sending notification!"
-    curl -s "https://www.ultimatenotifier.com/items/User/send/${user}/message=${message}%20${ip}/password=${pass}"
+    if [ "$ip" != "" ]; then
+        echo "New public IP. Sending notification!"
+        curl -s "https://www.ultimatenotifier.com/items/User/send/${user}/message=${message}%20${ip}/password=${pass}"
+    fi
 fi
 
 cp /dev/null $ipfile
