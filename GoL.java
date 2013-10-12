@@ -28,6 +28,12 @@ public class GoL extends javax.swing.JPanel {
         Random r = new Random(System.nanoTime());
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
+                // data[i][j] = r.nextInt(10);
+                // if (data[i][j] >= 8) {
+                //     data[i][j] = ALIVE;
+                // } else {
+                //     data[i][j] = DEAD;
+                // }
                 data[i][j] = r.nextInt(2);
             }
         }
@@ -106,7 +112,7 @@ public class GoL extends javax.swing.JPanel {
         public Void doInBackground() throws Exception {
             int[] mem = new int[width * height];
             while(true) {
-                if (System.currentTimeMillis() >= (lastFrame + 1000)) {
+                if (System.currentTimeMillis() >= (lastFrame + 200)) {
                     mem = drawView(mem);
                     Image img = createImage(new MemoryImageSource(width, height, mem, 0, width));
                     BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -114,7 +120,7 @@ public class GoL extends javax.swing.JPanel {
                     g2.drawImage(img, 0, 0, null);
                     g2.dispose();
                     publish(bi);
-                System.out.print(".");
+                    lastFrame = System.currentTimeMillis();
                 }
             }
         }
