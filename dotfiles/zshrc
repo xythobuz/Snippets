@@ -5,8 +5,7 @@ ZSH=$HOME/.oh-my-zsh
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-#ZSH_THEME="robbyrussell"
-ZSH_THEME="dpoggi"
+ZSH_THEME="aussiegeek"
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -18,9 +17,32 @@ COMPLETION_WAITING_DOTS="true"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git github osx)
+plugins=(git github osx zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
-export PATH=~/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/usr/local/CrossPack-AVR/bin:.
+export PATH=~/bin:/usr/local/share/python:/usr/local/bin:/bin:/usr/local/sbin:/sbin:/usr/bin:/usr/sbin:/opt/X11/bin:/usr/local/CrossPack-AVR/bin:/usr/games/bin:~/Android/adt-bundle-mac-x86_64/sdk/platforms:~/Android/adt-bundle-mac-x86_64/sdk/platform-tools:~/Android/adt-bundle-mac-x86_64/sdk/tools:/usr/texbin:/Users/thomas/arm-gcc/gcc-arm-none-eabi/bin:/Users/thomas/dmd2/osx/bin:.
+
+export EDITOR=vim
+
+export LPC_DEPLOY='cp PROJECT.bin /Volumes/MBED/'
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+
+### Added by the Heroku Toolbelt
+export PATH="/usr/local/heroku/bin:$PATH"
+
+export MARKPATH=$HOME/.marks
+function jump { 
+        cd -P $MARKPATH/$1 2>/dev/null || echo "No such mark: $1"
+}
+function mark { 
+        mkdir -p $MARKPATH; ln -s $(pwd) $MARKPATH/$1
+}
+function unmark { 
+        rm -i $MARKPATH/$1 
+}
+function marks {
+        ls -l $MARKPATH | sed 's/  / /g' | cut -d' ' -f9- | sed 's/ -/ -/g' && echo
+}
