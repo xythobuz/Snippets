@@ -23,6 +23,13 @@ let g:BufferListMaxWidth = 50
 hi BufferSelected term=reverse ctermfg=white ctermbg=red cterm=bold
 hi BufferNormal term=NONE ctermfg=black ctermbg=darkcyan cterm=NONE
 
+" Set utf8 as standard encoding and en_US as the standard language
+set encoding=utf8
+
+" Use Unix as the standard file type
+set ffs=unix,dos,mac
+
+
 set autoindent smartindent		" always set autoindenting on
 set autowrite
 set tabstop=4
@@ -55,15 +62,35 @@ let filetype_m='objc'
 
 syntax on
 
-"inoremap ' ''<Left>
-"inoremap " ""<Left>
-"inoremap ( ()<Left>
-"inoremap < <><Left>
-"inoremap { {}<Left>
-"inoremap [ []<Left>
+inoremap ' ''<Left>
+inoremap " ""<Left>
+inoremap ( ()<Left>
+" inoremap < <><Left>
+inoremap { {}<Left>
+inoremap [ []<Left>
+
+" Smart way to move between windows
+map <C-j> <C-W>j
+map <C-k> <C-W>k
+map <C-h> <C-W>h
+map <C-l> <C-W>l
+
+" Move a line of text using ALT+[jk] or Comamnd+[jk] on mac
+nmap <M-j> mz:m+<cr>`z
+nmap <M-k> mz:m-2<cr>`z
+vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
+vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
+
+if has("mac") || has("macunix")
+  nmap <D-j> <M-j>
+  nmap <D-k> <M-k>
+  vmap <D-j> <M-j>
+  vmap <D-k> <M-k>
+endif
 
 if has("gui_running")
-	set columns=100
+	set columns=120
+    set lines=70
 	set transparency=10
-	set guifont=Bitstream\ Vera\ Sans\ Mono:h13
+	set guifont=Bitstream\ Vera\ Sans\ Mono:h14
 endif
