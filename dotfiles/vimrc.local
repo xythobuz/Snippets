@@ -1,0 +1,19 @@
+colorscheme diablo3
+if has("gui_running")
+	set columns=120
+    set lines=70
+	set guifont=Bitstream\ Vera\ Sans\ Mono:h14
+endif
+
+map <silent> <C-a> :call BufferList()<CR>
+let g:BufferListWidth = 25
+let g:BufferListMaxWidth = 50
+hi BufferSelected term=reverse ctermfg=white ctermbg=red cterm=bold
+hi BufferNormal term=NONE ctermfg=black ctermbg=darkcyan cterm=NONE
+
+set encoding=utf8
+set ffs=unix,dos,mac
+set wrap
+set linebreak
+set nolist
+set nofoldenable
