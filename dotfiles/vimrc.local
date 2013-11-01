@@ -13,7 +13,10 @@ hi BufferNormal term=NONE ctermfg=black ctermbg=darkcyan cterm=NONE
 
 set encoding=utf8
 set ffs=unix,dos,mac
+set nofoldenable
+set number
 set wrap
 set linebreak
 set nolist
-set nofoldenable
+set textwidth=0 wrapmargin=0
+set formatoptions-=t
