@@ -26,5 +26,7 @@ export PATH=~/bin:/opt/local/bin:/usr/local/git/bin:/usr/local/share/python:/usr
 
 export EDITOR=vim
 export LPC_DEPLOY='cp PROJECT.bin /Volumes/MBED/'
+export LC_ALL=en_US.UTF-8  
+export LANG=en_US.UTF-8
 
 alias crontab="VIM_CRONTAB=true crontab"
